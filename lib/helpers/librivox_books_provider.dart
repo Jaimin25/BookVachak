@@ -42,11 +42,14 @@ class LibrivoxBooksProvider {
   Future<List<AudioTracks>> fetchAudioTracks(String projectId) async {
     try {
       http.Response response =
-          await http.get(Uri.parse(lbvxAudioBooksUrl + offset));
+          await http.get(Uri.parse(lbvxAudioTracksUrl + projectId));
       if (response.statusCode == 200) {
         List<dynamic> sections =
-            jsonDecode(response.body)['books'] as List<dynamic>;
-        print(sections);
+            jsonDecode(response.body)['sections'] as List<dynamic>;
+        List<AudioTracks> audioTrackList =
+            sections.map((item) => AudioTracks.fromJSON(item)).toList();
+
+        return audioTrackList;
       }
     } catch (e) {
       print(e);

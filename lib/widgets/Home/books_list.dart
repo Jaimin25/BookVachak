@@ -1,4 +1,6 @@
 import 'package:bookvachak/modals/books_modal.dart';
+import 'package:bookvachak/screens/audio_tracks_screen.dart';
+import 'package:bookvachak/screens/home_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:skeletons/skeletons.dart';
@@ -40,7 +42,12 @@ class _BooksGridViewState extends State<BooksList> {
                 if (snapshot.hasData &&
                     snapshot.connectionState == ConnectionState.done) {
                   return GestureDetector(
-                    onTap: () => (),
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => AudioTracksScreen(
+                                  projectId: snapshot.data!.id,
+                                ))),
                     child: Card(
                       surfaceTintColor: Colors.white,
                       elevation: 4.0,
