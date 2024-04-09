@@ -1,4 +1,4 @@
-import 'package:bookvachak/helpers/librovox_books_provider.dart';
+import 'package:bookvachak/helpers/librivox_books_provider.dart';
 import 'package:bookvachak/modals/books_modal.dart';
 import 'package:bookvachak/widgets/Home/books_list.dart';
 import 'package:bookvachak/widgets/Home/hero_carousel_slider.dart';
@@ -27,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       isFetching = true;
     });
-    LibrovoxBooksProvider lbp = LibrovoxBooksProvider();
+    LibrivoxBooksProvider lbp = LibrivoxBooksProvider();
     List<Future<BooksModal>> asyncbookList = await lbp.fetchBooks();
 
     setState(() {
