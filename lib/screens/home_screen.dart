@@ -13,7 +13,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late List<Future<BooksModal>>? bookList;
+  late List<BooksModal>? bookList;
 
   bool isFetching = false;
 
@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
       isFetching = true;
     });
     LibrivoxBooksProvider lbp = LibrivoxBooksProvider();
-    List<Future<BooksModal>> asyncbookList = await lbp.fetchBooks();
+    List<BooksModal> asyncbookList = await lbp.fetchBooks();
 
     setState(() {
       bookList = asyncbookList;
@@ -36,9 +36,8 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<BooksModal> getBook(index) async {
-    Future<BooksModal> bookFuture = bookList![index];
-    BooksModal book = await bookFuture;
+  BooksModal getBook(index) {
+    BooksModal book = bookList![index];
     return book;
   }
 

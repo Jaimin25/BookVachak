@@ -1,20 +1,4 @@
-import 'package:bookvachak/services/rss_feed_parser.dart';
-
-class AuthorModal {
-  String? id;
-  String? firstName;
-  String? lastName;
-
-  AuthorModal({this.id, this.firstName, this.lastName});
-
-  factory AuthorModal.fromMap(Map<String, dynamic> authors) {
-    return AuthorModal(
-      id: authors['id'],
-      firstName: authors['first_name'],
-      lastName: authors['last_name'],
-    );
-  }
-}
+import 'package:bookvachak/modals/author_modal.dart';
 
 class BooksModal {
   late String? id;
@@ -37,14 +21,12 @@ class BooksModal {
     this.totaltimesecs,
   });
 
-  static Future<BooksModal> fromJson(dynamic json) async {
-    final rssFeedParser = RssFeedParser();
-    final coverUrl = await rssFeedParser.fetchImageUrl(json['url_rss']);
+  factory BooksModal.fromJson(dynamic json) {
     return BooksModal(
       id: json['id'],
       title: json['title'],
       description: json['description'],
-      coverMediaUrl: coverUrl,
+      coverMediaUrl: json['coverMediaUrl'],
       totalEp: json['num_sections'],
       authors: AuthorModal.fromMap(json['authors'][0] as Map<String, dynamic>),
       urlRss: json['url_rss'],

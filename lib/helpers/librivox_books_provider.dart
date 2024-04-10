@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:bookvachak/modals/audio_track_modal.dart';
 import 'package:bookvachak/modals/books_modal.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
 class LibrivoxBooksProvider {
@@ -17,17 +18,32 @@ class LibrivoxBooksProvider {
     offset = (rnd.nextInt(50) + 75).toString();
   }
 
-  Future<List<Future<BooksModal>>> fetchBooks() async {
+  Future<List<BooksModal>> fetchBooks() async {
     try {
+      List urls = await loadCoverUrls();
       http.Response response =
           await http.get(Uri.parse(lbvxAudioBooksUrl + offset));
 
       if (response.statusCode == 200) {
         List<dynamic> books =
             jsonDecode(response.body)['books'] as List<dynamic>;
-        List<Future<BooksModal>> bookList = books
+        List<BooksModal> bookList = books
             .where((item) => item['language'] == 'English')
-            .map((item) async => BooksModal.fromJson(item))
+            .map((item) {
+              var coverUrl = urls.firstWhere(
+                (url) => url['id'] == item['id'],
+                orElse: () => null,
+              );
+
+              if (coverUrl != null) {
+                item['coverMediaUrl'] =
+                    "https://archive.org/download${coverUrl['cover_media_url']}";
+              }
+
+              return BooksModal.fromJson(
+                item,
+              );
+            })
             .take(8)
             .toList();
 
@@ -52,8 +68,23 @@ class LibrivoxBooksProvider {
         return audioTrackList;
       }
     } catch (e) {
-      print(e);
+      print(e.toString());
     }
+    return [];
+  }
+}
+
+Future<List<dynamic>> loadCoverUrls() async {
+  try {
+    String txt =
+        await rootBundle.loadString('assets/audio_book_cover_urls.json');
+
+    final data = await jsonDecode(txt);
+    List urls = data['url'];
+
+    return urls;
+  } catch (e) {
+    print(e);
     return [];
   }
 }
