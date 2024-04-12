@@ -39,6 +39,11 @@ dependencies:
   flutter_html: ^3.0.0-beta.2
   carousel_slider: ^4.2.1
   skeletons: ^0.0.3
+  just_audio: ^0.9.37
+  audio_session: ^0.1.19
+  audio_service: ^0.18.13
+  get_it: ^7.6.8
+  audio_video_progress_bar: ^2.0.2
 
 dev_dependencies:
   flutter_test:

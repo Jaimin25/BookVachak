@@ -1,7 +1,10 @@
 import 'package:bookvachak/screens/main_screen.dart';
+import 'package:bookvachak/services/service_locator.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await setupServiceLocator();
   runApp(const MyApp());
 }
 
@@ -20,7 +23,10 @@ class MyApp extends StatelessWidget {
         primaryColor: Colors.amber,
       ),
       initialRoute: "/",
-      routes: {"/": (context) => const MainScreen()},
+      routes: {
+        "/": (context) => const MainScreen(),
+      },
+      // home: const MyAppTwo(),
     );
   }
 }
