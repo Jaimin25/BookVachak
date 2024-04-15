@@ -1,12 +1,12 @@
 import 'package:bookvachak/modals/books_modal.dart';
-import 'package:bookvachak/widgets/Skeletons/carousel_slider_skeleton.dart';
+import 'package:bookvachak/screens/audio_tracks_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:skeletons/skeletons.dart';
 
 class HeroCarouselSlider extends StatefulWidget {
-  final Future<BooksModal> Function(dynamic) getBook;
+  final BooksModal Function(dynamic) getBook;
   const HeroCarouselSlider({super.key, required this.getBook});
 
   @override
@@ -15,51 +15,55 @@ class HeroCarouselSlider extends StatefulWidget {
 
 class _HeroCarouselSliderState extends State<HeroCarouselSlider> {
   int _current = 0;
-  final List<BooksModal?> _books = List.generate(4, (index) => null);
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         Expanded(
-            child: CarouselSlider.builder(
-                itemCount: 4,
-                options: CarouselOptions(
-                  autoPlay: true,
-                  enableInfiniteScroll: true,
-                  enlargeCenterPage: true,
-                  enlargeFactor: 0.3,
-                  onPageChanged: (index, reason) {
-                    setState(() {
-                      _current = index;
-                    });
-                  },
-                ),
-                itemBuilder: (context, index, realIndex) {
-                  if (_books[index] == null) {
-                    widget.getBook(index).then((book) {
-                      setState(() {
-                        _books[index] = book;
-                      });
-                    });
-                    return const HeroCarouselSkeleton();
-                  } else {
-                    return Card(
-                      elevation: 4.0,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10.0),
-                        child: CachedNetworkImage(
-                          imageUrl: _books[index]!.coverMediaUrl as String,
-                          placeholder: (context, url) {
-                            return const SkeletonAvatar(
-                              style: SkeletonAvatarStyle(
-                                  width: 200.0, height: 200.0),
-                            );
-                          },
-                        ),
+          child: CarouselSlider.builder(
+              itemCount: 4,
+              options: CarouselOptions(
+                autoPlay: true,
+                enableInfiniteScroll: true,
+                enlargeCenterPage: true,
+                enlargeFactor: 0.3,
+                onPageChanged: (index, reason) {
+                  setState(() {
+                    _current = index;
+                  });
+                },
+              ),
+              itemBuilder: (context, index, realIndex) {
+                return GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AudioTracksScreen(
+                        book: widget.getBook(index),
                       ),
-                    );
-                  }
-                })),
+                    ),
+                  ),
+                  child: Card(
+                    elevation: 4.0,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10.0),
+                      child: CachedNetworkImage(
+                        imageUrl: widget.getBook(index).coverMediaUrl as String,
+                        placeholder: (context, url) {
+                          return const SkeletonAvatar(
+                            style: SkeletonAvatarStyle(
+                                width: 200.0, height: 200.0),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              }
+              // }
+              ),
+        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [0, 1, 2, 3].asMap().entries.map((entry) {

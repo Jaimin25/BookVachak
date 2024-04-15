@@ -1,8 +1,18 @@
+import 'package:bookvachak/screens/audio_player.dart';
 import 'package:bookvachak/screens/main_screen.dart';
+import 'package:bookvachak/services/audio_handler.dart';
+import 'package:bookvachak/services/service_locator.dart';
+import 'package:bookvachak/widgets/Player/page_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-void main() {
-  runApp(const MyApp());
+late MyAudioHandler _adh;
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  _adh = await setupServiceLocator();
+  runApp(
+    const MyApp(),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -20,7 +30,10 @@ class MyApp extends StatelessWidget {
         primaryColor: Colors.amber,
       ),
       initialRoute: "/",
-      routes: {"/": (context) => const MainScreen()},
+      routes: {
+        "/": (context) => const MainScreen(),
+      },
+      // home: const MyAppTwo(),
     );
   }
 }
