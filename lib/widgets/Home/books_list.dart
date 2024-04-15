@@ -7,7 +7,10 @@ import 'package:skeletons/skeletons.dart';
 class BooksList extends StatefulWidget {
   final List<BooksModal>? bookList;
 
-  const BooksList({super.key, required this.bookList});
+  const BooksList({
+    super.key,
+    required this.bookList,
+  });
 
   @override
   State<BooksList> createState() => _BooksGridViewState();

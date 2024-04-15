@@ -34,7 +34,7 @@ class _AudioTracksListState extends State<AudioTracksList> {
   Widget build(BuildContext context) {
     return ListView.builder(
       itemCount: widget._audioTracks!.length,
-      itemBuilder: (cotext, index) {
+      itemBuilder: (context, index) {
         return ListTile(
           onTap: () {},
           title: Text(widget._audioTracks![index].title!),
@@ -50,7 +50,9 @@ class _AudioTracksListState extends State<AudioTracksList> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => AudioPlayerScreen(
-                      audioTracks: widget._audioTracks!, book: widget._book),
+                      audioTracks: widget._audioTracks!,
+                      book: widget._book,
+                      index: index),
                 ),
               );
             },

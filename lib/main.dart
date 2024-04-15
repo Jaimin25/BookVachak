@@ -1,11 +1,18 @@
+import 'package:bookvachak/screens/audio_player.dart';
 import 'package:bookvachak/screens/main_screen.dart';
+import 'package:bookvachak/services/audio_handler.dart';
 import 'package:bookvachak/services/service_locator.dart';
+import 'package:bookvachak/widgets/Player/page_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+late MyAudioHandler _adh;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await setupServiceLocator();
-  runApp(const MyApp());
+  _adh = await setupServiceLocator();
+  runApp(
+    const MyApp(),
+  );
 }
 
 class MyApp extends StatelessWidget {

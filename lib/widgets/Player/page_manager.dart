@@ -1,17 +1,24 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:bookvachak/modals/audio_track_modal.dart';
+import 'package:bookvachak/modals/books_modal.dart';
 import 'package:bookvachak/notifiers/play_button_notifier.dart';
 import 'package:bookvachak/notifiers/progress_notifier.dart';
 import 'package:bookvachak/notifiers/repeat_button_notifier.dart';
 import 'package:bookvachak/services/audio_handler.dart';
-import 'package:bookvachak/services/service_locator.dart';
 import 'package:flutter/foundation.dart';
+import 'package:just_audio/just_audio.dart';
 
 class PageManager {
   // Listeners: Updates going to the UI
   List<AudioTracks>? audioTracks;
+  String? trackTitle;
   String? artUri;
   String? artTitle;
+  bool isPlaying = false;
+  BooksModal? book;
+  int? index;
+  int? tempIndex;
+  String? tempTitle;
   final currentSongTitleNotifier = ValueNotifier<String>('');
   final playlistNotifier = ValueNotifier<List<String>>([]);
   final progressNotifier = ProgressNotifier();
@@ -20,17 +27,18 @@ class PageManager {
   final playButtonNotifier = PlayButtonNotifier();
   final isLastSongNotifier = ValueNotifier<bool>(true);
   final isShuffleModeEnabledNotifier = ValueNotifier<bool>(false);
+  final isPlayerPlaying = ValueNotifier<bool>(false);
 
-  late AudioHandler adh;
+  late MyAudioHandler adh;
 
-  late AudioHandler _audioHandler;
+  late MyAudioHandler _audioHandler;
 
   PageManager({
     required this.adh,
   });
 
-  void init() async {
-    await _loadPlaylist();
+  void init(int indexx, String bookTitle) async {
+    await _loadPlaylist(indexx, bookTitle);
     _listenToChangesInPlaylist();
     _listenToPlaybackState();
     _listenToCurrentPosition();
@@ -39,7 +47,7 @@ class PageManager {
     _listenToChangesInSong();
   }
 
-  Future<void> _loadPlaylist() async {
+  Future<void> _loadPlaylist(int indexx, String bookTitle) async {
     final mediaItems = audioTracks!
         .map(
           (item) => MediaItem(
@@ -51,17 +59,60 @@ class PageManager {
           ),
         )
         .toList();
-    _audioHandler.addQueueItem(mediaItems[0]);
+    _audioHandler.addQueueItems(mediaItems);
+
+    if (tempTitle != bookTitle || indexx != tempIndex) {
+      await _audioHandler.getPlayer().seek(Duration.zero, index: indexx);
+      _audioHandler.getPlayer().play();
+    }
+    isPlayerPlaying.value = true;
   }
 
-  void setValues(List<AudioTracks> tracks, String uri, String bookTitle) {
-    _audioHandler = adh;
-    while (_audioHandler.queue.value.isNotEmpty) {
-      _audioHandler.queue.value.removeLast();
+  void setValues(List<AudioTracks> tracks, String uri, String bookTitle,
+      BooksModal bookk, int indexx) {
+    if (artTitle == null ||
+        bookTitle.toLowerCase() != artTitle?.toLowerCase()) {
+      _audioHandler = adh;
+      while (_audioHandler.queue.value.isNotEmpty) {
+        _audioHandler.queue.value.removeLast();
+      }
+      _audioHandler.getPlayer().setAudioSource(
+            ConcatenatingAudioSource(children: []),
+          );
+      final audioSources = tracks
+          .map(
+            (item) => ClippingAudioSource(
+              child: AudioSource.uri(
+                Uri.parse(
+                  item.trackUrl.toString(),
+                ),
+                tag: MediaItem(
+                  id: item.id ?? '',
+                  album: artTitle ?? '',
+                  title: item.title ?? '',
+                  artUri: Uri.parse(artUri ?? ''),
+                  extras: {'url': item.trackUrl},
+                ),
+              ),
+            ),
+          )
+          .toList();
+      _audioHandler.getPlayer().setAudioSource(
+            ConcatenatingAudioSource(children: audioSources),
+          );
     }
+    tempIndex = index;
+    tempTitle = artTitle;
     audioTracks = tracks;
     artTitle = bookTitle;
     artUri = uri;
+    book = bookk;
+    index = indexx;
+    trackTitle = tracks[indexx].title;
+  }
+
+  MyAudioHandler getAudioHandler() {
+    return _audioHandler;
   }
 
   void _listenToChangesInPlaylist() {
@@ -181,8 +232,9 @@ class PageManager {
     }
   }
 
+  @override
   void dispose() {
-    _audioHandler.customAction('dispose');
+    // _audioHandler.customAction('dispose');
   }
 
   void stop() {

@@ -6,13 +6,19 @@ import 'package:bookvachak/notifiers/progress_notifier.dart';
 import 'package:bookvachak/notifiers/repeat_button_notifier.dart';
 import 'package:bookvachak/services/service_locator.dart';
 import 'package:bookvachak/widgets/Player/page_manager.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:skeletons/skeletons.dart';
 
 class AudioPlayerScreen extends StatefulWidget {
   final List<AudioTracks> audioTracks;
   final BooksModal book;
+  final int index;
   const AudioPlayerScreen(
-      {super.key, required this.audioTracks, required this.book});
+      {super.key,
+      required this.audioTracks,
+      required this.book,
+      required this.index});
 
   @override
   State<AudioPlayerScreen> createState() => _AudioPlayerScreenState();
@@ -25,9 +31,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   void initState() {
     super.initState();
     _pageManager = getIt<PageManager>();
-    _pageManager.setValues(
-        widget.audioTracks, widget.book.coverMediaUrl!, widget.book.title!);
-    _pageManager.init();
+    _pageManager.setValues(widget.audioTracks, widget.book.coverMediaUrl!,
+        widget.book.title!, widget.book, widget.index);
+    _pageManager.init(widget.index, widget.book.title!);
   }
 
   @override
@@ -53,15 +59,40 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: Container(
-          child: Column(
-            children: [
-              const CurrentSongTitle(),
-              Playlist(pageManager: _pageManager),
-              const AudioProgressBar(),
-              const AudioControlButtons(),
-            ],
-          ),
+        child: Column(
+          children: [
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Card(
+                    elevation: 4.0,
+                    surfaceTintColor: Colors.white,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10.0),
+                      child: CachedNetworkImage(
+                        imageUrl: widget.book.coverMediaUrl as String,
+                        placeholder: (context, url) {
+                          return const SkeletonAvatar(
+                            style: SkeletonAvatarStyle(
+                                width: 200.0, height: 200.0),
+                          );
+                        },
+                        height: 300.0,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const CurrentSongTitle(),
+            const SizedBox(height: 10.0),
+            const AudioProgressBar(),
+            const AudioControlButtons(),
+            const SizedBox(
+              height: 45.0,
+            )
+          ],
         ),
       ),
     );
@@ -76,10 +107,11 @@ class CurrentSongTitle extends StatelessWidget {
       valueListenable: _pageManager.currentSongTitleNotifier,
       builder: (_, title, __) {
         return Padding(
-          padding: const EdgeInsets.only(top: 8.0),
+          padding: const EdgeInsets.only(top: 10.0),
           child: Text(
             title,
-            style: const TextStyle(fontSize: 40),
+            textAlign: TextAlign.left,
+            style: const TextStyle(fontSize: 24),
           ),
         );
       },
@@ -122,6 +154,10 @@ class AudioProgressBar extends StatelessWidget {
           buffered: value.buffered,
           total: value.total,
           onSeek: _pageManager.seek,
+          progressBarColor: Colors.orange,
+          baseBarColor: Colors.orange[100],
+          bufferedBarColor: Colors.orange[200],
+          thumbColor: Colors.orange,
         );
       },
     );
@@ -137,11 +173,11 @@ class AudioControlButtons extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          RepeatButton(),
+          // RepeatButton(),
           PreviousSongButton(),
           PlayButton(),
           NextSongButton(),
-          ShuffleButton(),
+          // ShuffleButton(),
         ],
       ),
     );
@@ -184,7 +220,10 @@ class PreviousSongButton extends StatelessWidget {
       valueListenable: _pageManager.isFirstSongNotifier,
       builder: (_, isFirst, __) {
         return IconButton(
-          icon: const Icon(Icons.skip_previous),
+          icon: const Icon(
+            Icons.skip_previous,
+            size: 32.0,
+          ),
           onPressed: (isFirst) ? null : _pageManager.previous,
         );
       },
@@ -205,19 +244,30 @@ class PlayButton extends StatelessWidget {
               margin: const EdgeInsets.all(8.0),
               width: 32.0,
               height: 32.0,
-              child: const CircularProgressIndicator(),
+              child: const CircularProgressIndicator(
+                color: Colors.orange,
+              ),
             );
           case ButtonState.paused:
-            return IconButton(
-              icon: const Icon(Icons.play_arrow),
-              iconSize: 32.0,
+            return FloatingActionButton.large(
+              backgroundColor: Colors.orangeAccent,
               onPressed: _pageManager.play,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: const Icon(
+                Icons.play_arrow,
+                size: 32.0,
+              ),
             );
           case ButtonState.playing:
-            return IconButton(
-              icon: const Icon(Icons.pause),
-              iconSize: 32.0,
+            return FloatingActionButton.large(
+              backgroundColor: Colors.orangeAccent,
               onPressed: _pageManager.pause,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: const Icon(Icons.pause, size: 32.0),
             );
         }
       },
@@ -233,7 +283,10 @@ class NextSongButton extends StatelessWidget {
       valueListenable: _pageManager.isLastSongNotifier,
       builder: (_, isLast, __) {
         return IconButton(
-          icon: const Icon(Icons.skip_next),
+          icon: const Icon(
+            Icons.skip_next,
+            size: 32.0,
+          ),
           onPressed: (isLast) ? null : _pageManager.next,
         );
       },
@@ -250,7 +303,10 @@ class ShuffleButton extends StatelessWidget {
       builder: (context, isEnabled, child) {
         return IconButton(
           icon: (isEnabled)
-              ? const Icon(Icons.shuffle)
+              ? const Icon(
+                  Icons.shuffle,
+                  color: Colors.green,
+                )
               : const Icon(Icons.shuffle, color: Colors.grey),
           onPressed: _pageManager.shuffle,
         );
